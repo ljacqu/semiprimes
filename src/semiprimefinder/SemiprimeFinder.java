@@ -2,6 +2,8 @@ package semiprimefinder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Finds semiprimes by generating all possible numbers
@@ -14,18 +16,17 @@ import java.util.List;
  * semiprimes, unoriginally, "real semiprimes."
  */
 public class SemiprimeFinder {
+
 	/** The highest number that is being investigated */
 	private int size;
-	/** floor(sqrt(size)): the highest number to consider as factor for a number */
-	private final int LIMIT;
-	/** Boolean list indicating which numbers are semiprimes */
-	private boolean[] isSemiprime;
+
 	/** 
 	 * 2d array containing the factors of the field. The first field indicates
 	 * whether we added or subtracted 1 (1 or -1).
 	 * For example, semiprimeFactors[5] = {-1, 2, 3}, meaning 5 = 2*3-1
 	 */
-	private Integer[][] semiprimeFactors;
+	private Map<Integer, Integer[]> semiprimes;
+	
 	/** A prime sieve object to get a list of prime numbers */
 	private PrimeSieve primeSieve;
 
@@ -35,16 +36,15 @@ public class SemiprimeFinder {
 	 * @param size The highest number to check
 	 */
 	public SemiprimeFinder(int size) {
-		this.size        = size;
-		LIMIT            = (int) Math.sqrt(size);
-		isSemiprime      = new boolean[size+1];
-		semiprimeFactors = new Integer[size+1][];
-		primeSieve       = new PrimeSieve(size);
+		this.size  = size;
+		semiprimes = new TreeMap<Integer, Integer[]>();
+		primeSieve = new PrimeSieve(size);
 		getAllSemiprimes();
 	}
 	
 	public static void main(String[] args) {
-		SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
+		//SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
+		SemiprimeFinder sps = new SemiprimeFinder(1000);
 		//sps.primeSieve.printList();
 		sps.getAllSemiprimes();
 		sps.printSemiprimes();
@@ -55,17 +55,27 @@ public class SemiprimeFinder {
 	 */
 	private void getAllSemiprimes() {
 		int currentPrime = 2;
-		while (currentPrime < LIMIT && getCombinations(currentPrime)) {
+		int upperBound = (int) Math.sqrt(size);
+		while (currentPrime < upperBound && getCombinations(currentPrime)) {
 			currentPrime = nextPrime(currentPrime);
 		}
 	}
 	
+	/**
+	 * Handles all possible numbers which have prime numbers as factors
+	 * that are equals to or bigger than `start`.
+	 * @param start The smallest possible factor
+	 * @return True if there were possible numbers (i.e. at least one number
+	 *  could be constructed that is smaller than `size`)
+	 */
 	public boolean getCombinations(int start) {
-		int size = 0;
-		while (++size < this.size && getCombinations(start, size));
+		int length = 0;
+		// Actually, the check should be: ++length <= log(size)/log(start)
+		// because we will never have a factor smaller than `start`
+		while (++length <= size && getCombinations(start, length));
 		// if size == 1, we couldn't generate any
 		// combination with `start`, so we return false
-		return (size != 1); 
+		return (length > 1); 
 	}
 	
 	public boolean getCombinations(int start, int size) {
@@ -122,24 +132,19 @@ public class SemiprimeFinder {
 	private void registerSemiprime(int realSemiprime, List<Integer> history) {
 		boolean[] isPrime = {realSemiprime+1 <= size && primeSieve.isPrime(realSemiprime+1), 
 							 primeSieve.isPrime(realSemiprime-1)};
-		if (isPrime[0]) {
-			List<Integer> copiedHistory = isPrime[1] ? history : new ArrayList<Integer>(history);
-			registerSemiprime(realSemiprime, 1, copiedHistory);
-		}
-		if (isPrime[1]) {
-			// don't need copy constructor for `history` here
-			// because we don't need `history` anymore after this
-			registerSemiprime(realSemiprime, -1, history);
+		if (isPrime[0] || isPrime[1]) {
+			history.add(0, 0);
+			Integer[] factors = history.toArray(new Integer[history.size()]);
+		
+			if (isPrime[0]) registerSemiprime(realSemiprime,  1, factors);
+			if (isPrime[1]) registerSemiprime(realSemiprime, -1, factors);
 		}
 	}
 	
-	private void registerSemiprime(int semiprime, int additive, List<Integer> history) {
+	private void registerSemiprime(int semiprime, int additive, Integer[] factors) {
 		semiprime += additive;
-		isSemiprime[semiprime] = true;
-		
-		history.add(0, additive);
-		Integer[] factors = history.toArray(new Integer[history.size()]);
-		semiprimeFactors[semiprime] = factors;
+		factors[0] = additive;
+		semiprimes.put(semiprime, factors);
 	}
 	
 	
@@ -147,13 +152,11 @@ public class SemiprimeFinder {
 		return primeSieve.nextPrime(start);
 	}
 	
-	private void printSemiprimes() {
-		int i = -1;
-		for (Integer[] factors : semiprimeFactors) {
-			++i;
-			if (!isSemiprime[i]) continue;
-			System.out.print(i + ": ");
-			for (int factor: factors) {
+	// Print all entries (debug)
+	public void printSemiprimes() {
+		for (Map.Entry<Integer, Integer[]> entry : semiprimes.entrySet()) {
+			System.out.print(entry.getKey() + ": ");
+			for (int factor: entry.getValue()) {
 				System.out.print(factor + ", ");
 			}
 			System.out.println();
