@@ -44,7 +44,7 @@ public class SemiprimeFinder {
 	
 	public static void main(String[] args) {
 		//SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
-		SemiprimeFinder sps = new SemiprimeFinder(1000);
+		SemiprimeFinder sps = new SemiprimeFinder(10000);
 		//sps.primeSieve.printList();
 		sps.getAllSemiprimes();
 		sps.printSemiprimes();
@@ -110,12 +110,12 @@ public class SemiprimeFinder {
 		}
 		else {
 			--size;
-			for (int prime = startPrime; prime != 0; prime = nextPrime(prime)) {
+			for (int prime = nextPrime(startPrime); prime != 0; prime = nextPrime(prime)) {
 				List<Integer> newHistory = new ArrayList<Integer>(history);
 				newHistory.add(prime);
 				int newStart = start * prime;
 				if (getCombinations(newStart, prime, size, newHistory) == false) {
-					return (prime != startPrime);
+					return (prime != nextPrime(startPrime));
 				}
 			}
 			return true;
@@ -155,9 +155,13 @@ public class SemiprimeFinder {
 	// Print all entries (debug)
 	public void printSemiprimes() {
 		for (Map.Entry<Integer, Integer[]> entry : semiprimes.entrySet()) {
-			System.out.print(entry.getKey() + ": ");
-			for (int factor: entry.getValue()) {
-				System.out.print(factor + ", ");
+			Integer[] factors = entry.getValue();
+			
+			System.out.print(entry.getKey() + "\t");
+			System.out.print(factors[0] + "\t");
+			
+			for (int i = 1; i < factors.length; ++i) {
+				System.out.print(factors[i] + " ");
 			}
 			System.out.println();
 		}
