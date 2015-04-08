@@ -25,7 +25,7 @@ public class SemiprimeFinder {
 	 * whether we added or subtracted 1 (1 or -1).
 	 * For example, semiprimeFactors[5] = {-1, 2, 3}, meaning 5 = 2*3-1
 	 */
-	private Map<Integer, Integer[]> semiprimes;
+	private Map<Integer, List<Sequence>> semiprimes;
 	
 	/** A prime sieve object to get a list of prime numbers */
 	private PrimeSieve primeSieve;
@@ -35,19 +35,17 @@ public class SemiprimeFinder {
 	 * semiprime information.
 	 * @param size The highest number to check
 	 */
-	public SemiprimeFinder(int size) {
+	public SemiprimeFinder(int size) throws Exception {
 		this.size  = size;
-		semiprimes = new TreeMap<Integer, Integer[]>();
+		semiprimes = new TreeMap<Integer, List<Sequence>>();
 		primeSieve = new PrimeSieve(size);
 		getAllSemiprimes();
 	}
 	
-	public static void main(String[] args) {
-		//SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
-		SemiprimeFinder sps = new SemiprimeFinder(10000);
-		//sps.primeSieve.printList();
+	public static void main(String[] args) throws Exception {
+		SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
 		sps.getAllSemiprimes();
-		sps.printSemiprimes();
+//		PrintHelper.printSemiprimes(sps.semiprimes);
 	}
 	
 	/**
@@ -89,7 +87,7 @@ public class SemiprimeFinder {
 	 * to `startPrime`, multiplied with `start`. This is done in a recursive fashion.
 	 * 
 	 * For example, getCombo(6, 5, 2, ...) could call `registerSemiprime` for
-	 * the value 6*5*5, 6*5*7, 6*5*11, 6*7*7, 6*7*11 and 6*11*11.
+	 * the value 6*5*7, 6*5*11, and 6*7*11.
 	 * @param start The number to multiply the other factors with
 	 * @param startPrime The number all new factors must be bigger/equals to
 	 * @param size The number of additional prime number factors required
@@ -132,39 +130,36 @@ public class SemiprimeFinder {
 	private void registerSemiprime(int realSemiprime, List<Integer> history) {
 		boolean[] isPrime = {realSemiprime+1 <= size && primeSieve.isPrime(realSemiprime+1), 
 							 primeSieve.isPrime(realSemiprime-1)};
-		if (isPrime[0] || isPrime[1]) {
-			history.add(0, 0);
-			Integer[] factors = history.toArray(new Integer[history.size()]);
 		
-			if (isPrime[0]) registerSemiprime(realSemiprime,  1, factors);
-			if (isPrime[1]) registerSemiprime(realSemiprime, -1, factors);
-		}
+		if (isPrime[0]) registerSemiprime(realSemiprime,  1, history);
+		if (isPrime[1]) registerSemiprime(realSemiprime, -1, history);
 	}
 	
-	private void registerSemiprime(int semiprime, int additive, Integer[] factors) {
-		semiprime += additive;
-		factors[0] = additive;
-		semiprimes.put(semiprime, factors);
+	private void registerSemiprime(int semiprime, int sign, List<Integer> factors) {
+		Sequence sequence = new Sequence(sign, factors);
+		semiprime += sign;
+
+		List<Sequence> existingSequences = semiprimes.get(semiprime);
+		boolean foundSequence = false;
+		if (existingSequences == null) {
+			semiprimes.put(semiprime, new ArrayList<Sequence>());
+		}
+		else {
+			for (Sequence s : existingSequences) {
+				if (sequence.equals(s)) {
+					foundSequence = true;
+					break;
+				}
+			}
+		}
+		if (!foundSequence) {
+			semiprimes.get(semiprime).add(sequence);
+		}
 	}
 	
 	
 	private int nextPrime(int start) {
 		return primeSieve.nextPrime(start);
-	}
-	
-	// Print all entries (debug)
-	public void printSemiprimes() {
-		for (Map.Entry<Integer, Integer[]> entry : semiprimes.entrySet()) {
-			Integer[] factors = entry.getValue();
-			
-			System.out.print(entry.getKey() + "\t");
-			System.out.print(factors[0] + "\t");
-			
-			for (int i = 1; i < factors.length; ++i) {
-				System.out.print(factors[i] + " ");
-			}
-			System.out.println();
-		}
 	}
 	
 }

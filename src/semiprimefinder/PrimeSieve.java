@@ -28,7 +28,7 @@ public class PrimeSieve {
 	
 	public static void main(String[] args) {
 		PrimeSieve ps = new PrimeSieve(100000);
-		ps.printList();
+		PrintHelper.printPrimes(ps.isDivisible, 12);
 	}
 	
 	/**
@@ -54,13 +54,17 @@ public class PrimeSieve {
 	}
 	
 	/**
-	 * Return next prime number that is bigger than <code>start</code>.
+	 * Return next prime number that is bigger than `start`.
 	 * @param start The number the prime number needs to be bigger & closest to.
 	 * @return The next prime number, or 0 upon error (size exceeded).
 	 */
 	public int nextPrime(int start) {
-		while (++start <= size) {
-			if (isPrime(start)) return start;
+		// Ensure that `start` is odd
+		// even for nextPrime(2) the result is 3
+		// but for `start` < 2 the result is 3 and not 2
+		start += (start & 1) == 0 ? -1 : 0;
+		while ((start += 2) <= size) {
+			if (!isDivisible[start]) return start;
 		}
 		return 0;
 	}
@@ -93,36 +97,5 @@ public class PrimeSieve {
 		}
 		return list;
 	}
-	
-	
-	// --------------
-	// Print list (debug)
-	// --------------
-	public void printList() {
-		int primePerLine = 10;
-		int maxLength = (int) Math.log10(isDivisible.length)+1;
-		createPadding(maxLength-1);
-		System.out.print("2, ");
-		int displayedPrimes = 1;
-		for (int i = 3; i < isDivisible.length; i += 2) {
-			if (!isDivisible[i]) {
-				String s = new Integer(i).toString();
-				createPadding(maxLength - s.length());
-				System.out.print(i + ", ");
-				if (++displayedPrimes == primePerLine) {
-					System.out.println();
-					displayedPrimes = 0;
-				}
-			}
-		}
-		System.out.println();
-	}
-	
-	private void createPadding(int length) {
-		for (int i = 0; i < length; ++i) {
-			System.out.print(" ");
-		}
-	}
-
 
 }
