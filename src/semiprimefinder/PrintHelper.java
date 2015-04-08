@@ -1,6 +1,5 @@
 package semiprimefinder;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -32,18 +31,17 @@ public class PrintHelper {
 		
 	}
 	
-	public static void printSemiprimes(Map<Integer, List<Sequence>> semiprimes) {
-		for (Map.Entry<Integer, List<Sequence>> entry : semiprimes.entrySet()) {
-			List<Sequence> factorCombinations = entry.getValue();
-			
+	public static void printSemiprimes(Map<Integer, Sequence> semiprimes) {
+		for (Map.Entry<Integer, Sequence> entry : semiprimes.entrySet()) {
 			System.out.print(entry.getKey());
-			for (Sequence sequence: factorCombinations) {
-				System.out.print("\t" + sequence.getSign() + "\t");
-				for (Integer factor : sequence.getFactors()) {
-					System.out.print(factor + " ");
-				}
-				System.out.println();
+			
+			Sequence sequence = entry.getValue();
+			String sign = sequence.getSign() == 1 ? "+1" : "-1";
+			System.out.print("\t" + sign + "\t");
+			for (Integer factor : sequence.getFactors()) {
+				System.out.print(factor + " ");
 			}
+			System.out.println();
 		}
 	}
 	

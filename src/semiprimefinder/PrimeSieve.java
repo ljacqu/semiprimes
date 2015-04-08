@@ -62,7 +62,7 @@ public class PrimeSieve {
 		// Ensure that `start` is odd
 		// even for nextPrime(2) the result is 3
 		// but for `start` < 2 the result is 3 and not 2
-		start += (start & 1) == 0 ? -1 : 0;
+		start -= (start & 1) == 0 ? 1 : 0;
 		while ((start += 2) <= size) {
 			if (!isDivisible[start]) return start;
 		}

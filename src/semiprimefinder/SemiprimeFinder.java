@@ -21,11 +21,9 @@ public class SemiprimeFinder {
 	private int size;
 
 	/** 
-	 * 2d array containing the factors of the field. The first field indicates
-	 * whether we added or subtracted 1 (1 or -1).
-	 * For example, semiprimeFactors[5] = {-1, 2, 3}, meaning 5 = 2*3-1
+	 * List of the factors for each semiprime that was found.
 	 */
-	private Map<Integer, List<Sequence>> semiprimes;
+	private Map<Integer, Sequence> semiprimes;
 	
 	/** A prime sieve object to get a list of prime numbers */
 	private PrimeSieve primeSieve;
@@ -35,26 +33,33 @@ public class SemiprimeFinder {
 	 * semiprime information.
 	 * @param size The highest number to check
 	 */
-	public SemiprimeFinder(int size) throws Exception {
+	public SemiprimeFinder(int size) {
 		this.size  = size;
-		semiprimes = new TreeMap<Integer, List<Sequence>>();
+		semiprimes = new TreeMap<Integer, Sequence>();
 		primeSieve = new PrimeSieve(size);
-		getAllSemiprimes();
+		computeAllSemiprimes();
 	}
 	
 	public static void main(String[] args) throws Exception {
 		SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
-		sps.getAllSemiprimes();
-//		PrintHelper.printSemiprimes(sps.semiprimes);
+		//PrintHelper.printSemiprimes(sps.semiprimes);
+	}
+	
+	public PrimeSieve getPrimeSieve() {
+		return primeSieve;
+	}
+	
+	public Map<Integer, Sequence> getSemiprimes() {
+		return semiprimes;
 	}
 	
 	/**
 	 * Fills `isSemiprime` and `semiprimeFactors` with data up to `size`.
 	 */
-	private void getAllSemiprimes() {
+	private void computeAllSemiprimes() {
 		int currentPrime = 2;
 		int upperBound = (int) Math.sqrt(size);
-		while (currentPrime < upperBound && getCombinations(currentPrime)) {
+		while (currentPrime < upperBound && saveCombinations(currentPrime)) {
 			currentPrime = nextPrime(currentPrime);
 		}
 	}
@@ -66,20 +71,20 @@ public class SemiprimeFinder {
 	 * @return True if there were possible numbers (i.e. at least one number
 	 *  could be constructed that is smaller than `size`)
 	 */
-	public boolean getCombinations(int start) {
-		int length = 0;
+	public boolean saveCombinations(int start) {
+		int length = -1;
 		// Actually, the check should be: ++length <= log(size)/log(start)
 		// because we will never have a factor smaller than `start`
-		while (++length <= size && getCombinations(start, length));
+		while (++length <= size && saveCombinations(start, length));
 		// if size == 1, we couldn't generate any
 		// combination with `start`, so we return false
-		return (length > 1); 
+		return (length > 0); 
 	}
 	
-	public boolean getCombinations(int start, int size) {
+	public boolean saveCombinations(int start, int size) {
 		List<Integer> history = new ArrayList<Integer>(size);
 		history.add(start);
-		return getCombinations(start, start, size, history);
+		return saveCombinations(start, start, size, history);
 	}
 	
 	/**
@@ -97,7 +102,7 @@ public class SemiprimeFinder {
 	 *  than `this.size`. False indicates that increasing the parameter `size`
 	 *  with the same arguments will not produce any results anymore. 
 	 */
-	private boolean getCombinations(int start, int startPrime, int size, List<Integer> history) {
+	private boolean saveCombinations(int start, int startPrime, int size, List<Integer> history) {		
 		if (size == 0) {
 			if (start > this.size) {
 				return false;
@@ -112,7 +117,7 @@ public class SemiprimeFinder {
 				List<Integer> newHistory = new ArrayList<Integer>(history);
 				newHistory.add(prime);
 				int newStart = start * prime;
-				if (getCombinations(newStart, prime, size, newHistory) == false) {
+				if (saveCombinations(newStart, prime, size, newHistory) == false) {
 					return (prime != nextPrime(startPrime));
 				}
 			}
@@ -139,22 +144,7 @@ public class SemiprimeFinder {
 		Sequence sequence = new Sequence(sign, factors);
 		semiprime += sign;
 
-		List<Sequence> existingSequences = semiprimes.get(semiprime);
-		boolean foundSequence = false;
-		if (existingSequences == null) {
-			semiprimes.put(semiprime, new ArrayList<Sequence>());
-		}
-		else {
-			for (Sequence s : existingSequences) {
-				if (sequence.equals(s)) {
-					foundSequence = true;
-					break;
-				}
-			}
-		}
-		if (!foundSequence) {
-			semiprimes.get(semiprime).add(sequence);
-		}
+		semiprimes.put(semiprime, sequence);
 	}
 	
 	

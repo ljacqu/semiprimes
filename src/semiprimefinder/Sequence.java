@@ -12,9 +12,16 @@ public class Sequence {
 		this.factors = factors;
 	}
 	
-	public boolean equals(Sequence other) {
-		return this.sign == other.sign
-				&& this.factors.equals(other.factors);
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Sequence))
+			return false;
+		else if (other == this)
+			return true;
+		
+		Sequence otherSequence = (Sequence) other;
+		return this.sign == otherSequence.sign
+				&& this.factors.equals(otherSequence.factors);
 	}
 	
 	public int getSign() {
