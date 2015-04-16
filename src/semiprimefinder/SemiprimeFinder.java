@@ -42,7 +42,7 @@ public class SemiprimeFinder {
 	
 	public static void main(String[] args) throws Exception {
 		SemiprimeFinder sps = new SemiprimeFinder(10_000_000);
-		//PrintHelper.printSemiprimes(sps.semiprimes);
+		PrintHelper.printSemiprimes(sps.semiprimes);
 	}
 	
 	public PrimeSieve getPrimeSieve() {

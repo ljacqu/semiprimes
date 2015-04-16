@@ -27,8 +27,12 @@ public class PrimeSieve {
 	}
 	
 	public static void main(String[] args) {
-		PrimeSieve ps = new PrimeSieve(100000);
-		PrintHelper.printPrimes(ps.isDivisible, 12);
+		PrimeSieve ps = new PrimeSieve(1_000);
+		//PrintHelper.printPrimes(ps.isDivisible, 12);
+		System.out.println("Primes 2 <= n <=  1,000: " + ps.toList().size());
+		ps = new PrimeSieve(10_000);
+		//PrintHelper.printPrimes(ps.isDivisible, 12);
+		System.out.println("Primes 2 <= n <= 10,000: " + ps.toList().size());
 	}
 	
 	/**
