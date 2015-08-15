@@ -98,6 +98,12 @@ public class SemiprimeEvaluator {
     return result;
   }
 
+  /**
+   * Returns a map of all semiprimes, indicating whether they are "allowed" or not. They are not allowed
+   * when factors are used to construct the semiprimes which are not semiprimes themselves.
+   * @param semiprimes The collection of semiprimes to verify
+   * @return Map of semiprimes with boolean indicating if it's allowed
+   */
   private static Map<Integer, Boolean> constructAllowedList(
       Map<Integer, Sequence> semiprimes) {
     Map<Integer, Boolean> allowed = new HashMap<Integer, Boolean>(
@@ -108,7 +114,7 @@ public class SemiprimeEvaluator {
       boolean isAllowed = true;
       for (Integer factor : entry.getValue().getFactors()) {
         Boolean factorAllowed = allowed.get(factor);
-        if (factorAllowed == null || factorAllowed.equals(false)) {
+        if (factorAllowed == null || factorAllowed.equals(Boolean.FALSE)) {
           isAllowed = false;
           break;
         }
